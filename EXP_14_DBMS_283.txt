@@ -1,0 +1,60 @@
+Create a table emp2 with fields empno as int , name as characters , category as int (take only 3 catagories i.e 1,2, and 3)
+
+2. Design a trigger for insertion or updation a new record in capital letters only
+(hint - name=upper(name))
+
+3. ADD another field salary as number to the table
+
+4. Design a trigger for insertion or updation for the following
+if category is 1 then salary should be more than 10000
+if category is 2 then salary should be more than 20000
+if category is 3 then salary should be more than 30000
+
+
+CREATE TABLE emp22 (
+    empno INT,
+    name VARCHAR(50),
+    category INT CHECK (category IN (1, 2, 3))
+);
+
+INSERT INTO emp22 VALUES (1, 'Rahul', 1, 15000);
+INSERT INTO emp22 VALUES (2, 'Priya', 2, 25000);
+INSERT INTO emp22 VALUES (3, 'Amit', 3, 35000);
+INSERT INTO emp22 VALUES (4, 'Neha', 1, 12000);
+INSERT INTO emp22 VALUES (5, 'Rohit', 2, 22000);
+INSERT INTO emp22 VALUES (6, 'Sneha', 3, 40000);
+INSERT INTO emp22 VALUES (7, 'Karan', 1, 18000);
+INSERT INTO emp22 VALUES (8, 'Anjali', 2, 30000);
+INSERT INTO emp22 VALUES (9, 'Vikas', 3, 50000);
+INSERT INTO emp22 VALUES (10, 'Pooja', 1, 11000);
+
+CREATE OR REPLACE TRIGGER emp22_uppercase
+BEFORE INSERT OR UPDATE ON emp22
+FOR EACH ROW
+BEGIN
+    :NEW.name := UPPER(:NEW.name);
+END;
+/
+
+
+
+
+ALTER TABLE emp22
+ADD salary NUMBER;
+
+
+CREATE OR REPLACE TRIGGER emp22_salary_check
+BEFORE INSERT OR UPDATE ON emp22
+FOR EACH ROW
+BEGIN
+    IF :NEW.category = 1 AND :NEW.salary <= 10000 THEN
+        RAISE_ERROR(-20001, 'Salary must be more than 10000 for category 1');
+        
+    ELSIF :NEW.category = 2 AND :NEW.salary <= 20000 THEN
+        RAISE_ERROR(-20002, 'Salary must be more than 20000 for category 2');
+        
+    ELSIF :NEW.category = 3 AND :NEW.salary <= 30000 THEN
+        RAISE_ERROR(-20003, 'Salary must be more than 30000 for category 3');
+    END IF;
+END;
+/
