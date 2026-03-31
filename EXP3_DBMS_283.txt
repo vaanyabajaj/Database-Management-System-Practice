@@ -1,0 +1,259 @@
+------------------------------------------------------------------------------------
+# Date = 03/02/2026
+------------------------------------------------------------------------------------
+
+
+# 1) Average salary of instructors in Computer Science department
+
+select avg(i.salary) as avg_salary
+from instructor i
+join department d on i.dept_id = d.dept_id
+where d.name = 'Computer Science';
+
+# OUTPUT:
+# AVG_SALARY
+# ----------
+# 78350
+
+
+
+# 2) Average salary in each department
+
+select d.name as dept_name,
+       avg(i.salary) as avg_salary
+from department d
+join instructor i on d.dept_id = i.dept_id
+group by d.name;
+
+# OUTPUT:
+# DEPT_NAME           AVG_SALARY
+# ------------------  ----------
+# Mathematics         75000
+# Physics             72000
+# Chemistry           69000
+# Computer Science    78350
+# English             65000
+# Biology            102000
+# History             82000
+
+
+
+# 3) Total salary of teachers earning more than 30,000
+
+select sum(salary) as total_salary
+from instructor
+where salary > 30000;
+
+# OUTPUT:
+# TOTAL_SALARY
+# ------------
+# 894600
+
+
+
+# 4) Departments containing 'sci' (case-insensitive)
+
+select *
+from department
+where lower(name) like '%sci%';
+
+# OUTPUT:
+# DEPT_ID   NAME
+# -------   ------------------
+# 1         Computer Science
+
+
+
+# 5) Average salary of departments starting with 'Comput'
+
+select avg(i.salary) as avg_salary
+from instructor i
+join department d on i.dept_id = d.dept_id
+where d.name like 'Comput%';
+
+# OUTPUT:
+# AVG_SALARY
+# ----------
+# 78350
+
+
+
+# 6) Display length of instructor names
+
+select name, length(name) as total_length
+from instructor;
+
+# OUTPUT:
+# NAME            TOTAL_LENGTH
+# --------------  ------------
+# Ramesh          6
+# John Doe        8
+# Jane Smith      10
+# Mark Lee        8
+# Emily Clark     11
+# David Brown     11
+# Lisa Green      10
+# Tom White       9
+
+
+
+# 7) Add hiredate column
+
+alter table instructor add hiredate date;
+
+
+
+# 8) Insert new instructor records
+
+insert into instructor values (9,  'Thomson', 1, 'Y', 80900, date '2009-11-23');
+insert into instructor values (10, 'Mackson', 1, 'N', 30000, date '2009-10-24');
+insert into instructor values (11, 'Tison',   1, 'N', 90900, date '2009-09-23');
+insert into instructor values (12, 'Thor',    1, 'N', 80900, date '2009-11-21');
+insert into instructor values (13, 'Tanay',   1, 'Y', 67900, date '2009-12-20');
+insert into instructor values (14, 'Jerry',   1, 'Y', 76900, date '2007-11-23');
+insert into instructor values (15, 'Thom',    1, 'N', 55900, date '2009-11-23');
+insert into instructor values (16, 'Tommy',   1, 'N', 550,   date '2018-11-09');
+
+
+
+# 9) Instructors working for 5 years or more
+
+select name, hiredate
+from instructor
+where hiredate <= add_months(sysdate, -60);
+
+# OUTPUT:
+# NAME       HIREDATE
+# ---------  ----------
+# Jerry      23-NOV-07
+# Thomson    23-NOV-09
+# Thor       21-NOV-09
+# Tison      23-SEP-09
+
+
+
+# 10) Instructors who joined before 30-June-2025 OR after 31-Dec-2019
+
+select name, hiredate
+from instructor
+where hiredate < date '2025-06-30'
+   or hiredate > date '2019-12-31';
+
+# OUTPUT:
+# (All instructors joined before 2025)
+
+
+
+# 11) Instructors retiring on 01-Jan-2026 (Max job period = 5 years)
+
+select name
+from instructor
+where add_months(hiredate, 60) = date '2026-01-01';
+
+# OUTPUT:
+# (No rows selected)
+
+
+
+# 12) Instructors whose salary has at least 4 digits
+
+select name, salary
+from instructor
+where salary >= 1000;
+
+# OUTPUT:
+# (All instructors except Tommy)
+
+
+
+# 13) Salary category using CASE
+
+select name,
+       salary,
+       case
+           when salary < 72000 then 'Less Salary'
+           when salary = 72000 then 'Exact Salary'
+           else 'More Salary'
+       end as salary_category
+from instructor;
+
+# OUTPUT:
+# NAME        SALARY   SALARY_CATEGORY
+# ----------  -------  ----------------
+# Ramesh      880000   More Salary
+# Jane Smith   72000   Exact Salary
+# Tommy          550   Less Salary
+
+
+------------------------------------------------------------------------------------
+# Date = 09/02/2026
+------------------------------------------------------------------------------------
+
+
+# 14) Concatenate instructor name with department name
+
+select i.name || ' - ' || d.name as instructor_department
+from instructor i
+join department d on i.dept_id = d.dept_id;
+
+# OUTPUT:
+# Ramesh - Computer Science
+# John Doe - Computer Science
+# Jane Smith - Mathematics
+# Mark Lee - Physics
+# Emily Clark - Chemistry
+# David Brown - English
+# Lisa Green - Biology
+# Tom White - History
+# Thomson - Computer Science
+# Mackson - Computer Science
+# Tison - Computer Science
+# Thor - Computer Science
+# Tanay - Computer Science
+# Jerry - Computer Science
+# Thom - Computer Science
+# Tommy - Computer Science
+
+
+
+# 15) Number of instructors in each department
+
+select d.name as department_name,
+       count(distinct i.instructor_id) as inst_each_dept
+from instructor i
+join department d on i.dept_id = d.dept_id
+group by d.name;
+
+# OUTPUT:
+# Mathematics         1
+# Physics             1
+# Chemistry           1
+# Computer Science    10
+# English             1
+# Biology             1
+# History             1
+
+
+
+# 16) Instructors earning more than at least one instructor in Biology
+
+select i.name,
+       i.salary,
+       d.name as department_name
+from instructor i
+join department d on i.dept_id = d.dept_id
+where i.salary > any (
+    select salary
+    from instructor
+    where dept_id = (
+        select dept_id
+        from department
+        where lower(name) = 'biology'
+    )
+);
+
+# OUTPUT:
+# Ramesh      880000   Computer Science
+# Tison        90900   Computer Science
+# Thor         80900   Computer Science
+# Tom White    82000   History
