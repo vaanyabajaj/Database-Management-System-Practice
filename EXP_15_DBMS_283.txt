@@ -1,0 +1,40 @@
+DESIGN A TRIGGER TO STOP INSERTION OR UPDATION IN THE TABLE FOR THE DAYS LIKE SAT OR SUN OF ANY DATE (FOR PRACTICE PURPOSE TAKE THE DAY AS TUESDAY)
+
+create or replace procedure to_mnth
+as
+    v_month varchar2(10);
+begin
+    v_month:=upper(to_char(sysdate , 'dy'));
+    dbms_output.put_line('the current month is ' || v_month);
+end;
+/
+
+
+
+CREATE OR REPLACE TRIGGER emp22_tuesday
+BEFORE INSERT OR UPDATE ON emp22
+BEGIN
+    IF TO_CHAR(SYSDATE, 'DY') = 'TUE' THEN
+        RAISE_ERROR(-20004, 'No insertion or update allowed on Tuesday');
+    END IF;
+END;
+/
+
+
+or 
+
+
+create or replace trigger no_ins_upd
+BEFORE INSERT OR UPDATE ON emp22
+FOR EACH ROW
+declare
+     v_day varchar2(10);
+begin
+     v_day:= to_char(sysdate, 'dy');
+     if v_day='tue' then
+         raise_application_error(-20005,'cant insert on or update on' ||v_day);
+     end if;
+end;
+/
+
+
