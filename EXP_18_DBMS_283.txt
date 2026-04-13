@@ -1,0 +1,39 @@
+Embedd deleting and inserting into updation triggers
+
+CREATE OR REPLACE TRIGGER emp22_audit_all_trg
+AFTER INSERT OR UPDATE OR DELETE ON emp22
+FOR EACH ROW
+BEGIN
+    IF INSERTING THEN
+        INSERT INTO emp22_aud (
+            empno, name, category, salary, new_salary, mod_date
+        )
+        VALUES (:NEW.empno,:NEW.name,:NEW.category,NULL,:NEW.salary,SYSDATE);
+
+        DBMS_OUTPUT.PUT_LINE('INSERT OPERATION');
+        DBMS_OUTPUT.PUT_LINE('Empno: ' || :NEW.empno);
+        DBMS_OUTPUT.PUT_LINE('New Salary: ' || :NEW.salary);
+    ELSIF UPDATING THEN
+        INSERT INTO emp22_aud (
+            empno, name, category, salary, new_salary, mod_date
+        )
+        VALUES (:OLD.empno,:OLD.name,:OLD.category,:OLD.salary,:NEW.salary,SYSDATE);
+
+        DBMS_OUTPUT.PUT_LINE('UPDATE OPERATION');
+        DBMS_OUTPUT.PUT_LINE('Empno: ' || :OLD.empno);
+        DBMS_OUTPUT.PUT_LINE('Old Salary: ' || :OLD.salary);
+        DBMS_OUTPUT.PUT_LINE('New Salary: ' || :NEW.salary);
+    ELSIF DELETING THEN
+        INSERT INTO emp22_aud (
+            empno, name, category, salary, new_salary, mod_date
+        )
+    VALUES (:OLD.empno,:OLD.name,:OLD.category,:OLD.salary,NULL,SYSDATE);
+
+        DBMS_OUTPUT.PUT_LINE('DELETE OPERATION');
+        DBMS_OUTPUT.PUT_LINE('Empno: ' || :OLD.empno);
+        DBMS_OUTPUT.PUT_LINE('Deleted Salary: ' || :OLD.salary);
+
+    END IF;
+
+END;
+/
