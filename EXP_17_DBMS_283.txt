@@ -1,0 +1,29 @@
+AUDIT
+THIS COPIES THE STRUCTURE OF THE TABLE NOT THE DATA
+Create table emp22_Aud as
+select * from emp22 where 1=2;
+
+
+
+alter table emp22_aud add new_salary number;
+alter table emp22_aud add mod_date number;
+
+
+
+CREATE OR REPLACE TRIGGER emp22_audit
+AFTER UPDATE OF salary ON emp22
+FOR EACH ROW
+BEGIN
+    INSERT INTO emp22_aud (empno,name,category,salary,new_salary,mod_date
+    )
+    VALUES (:OLD.empno,:OLD.name,:OLD.category,:OLD.salary,:NEW.salary,sysdate
+    );
+    DBMS_OUTPUT.PUT_LINE('Employee No: ' || :OLD.empno);
+    DBMS_OUTPUT.PUT_LINE('Name: ' || :OLD.name);
+    DBMS_OUTPUT.PUT_LINE('Category: ' || :OLD.category);
+    DBMS_OUTPUT.PUT_LINE('Old Salary: ' || :OLD.salary);
+    DBMS_OUTPUT.PUT_LINE('New Salary: ' || :NEW.salary);
+    DBMS_OUTPUT.PUT_LINE('Modified Date: ' || TO_CHAR(SYSDATE, 'DD-MON-YYYY HH24:MI:SS'));
+END;
+/
+
