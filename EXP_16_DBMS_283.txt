@@ -1,0 +1,43 @@
+CREATE OR REPLACE TRIGGER emp22_mm_check
+BEFORE INSERT OR UPDATE ON emp22
+FOR EACH ROW
+DECLARE
+    v_min_sal emp22.salary%TYPE;
+    v_max_sal emp22.salary%TYPE;
+BEGIN
+    
+    SELECT MIN(salary), MAX(salary)
+    INTO v_min_sal, v_max_sal
+    FROM emp22;
+
+    IF v_min_sal != v_max_sal / 10 THEN
+        RAISE_APPLICATION_ERROR(-20010, 'Min salary must be 1/10 of max salary');
+    END IF;
+
+    IF v_max_sal != v_min_sal * 10 THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Max salary must be 10 times min salary');
+    END IF;
+END;
+/
+
+
+OR
+
+CREATE OR REPLACE TRIGGER emp22_mm_check
+BEFORE INSERT OR UPDATE ON emp22
+FOR EACH ROW
+DECLARE
+    v_min_sal emp22.salary%TYPE;
+    v_max_sal emp22.salary%TYPE;
+BEGIN
+    SELECT MIN(salary), MAX(salary)
+    INTO v_min_sal, v_max_sal
+    FROM emp22;
+    v_min_sal := LEAST(v_min_sal, :NEW.salary);
+    v_max_sal := GREATEST(v_max_sal, :NEW.salary);
+
+    IF v_min_sal != v_max_sal / 10 THEN
+        RAISE_APPLICATION_ERROR(-20010, 'Min salary must be 1/10 of max salary');
+    END IF;
+END;
+/
