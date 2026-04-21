@@ -1,0 +1,127 @@
+PROCEDURES
+
+1. Procedure: Get Employee Name and Salary
+
+CREATE OR REPLACE PROCEDURE Get_Empname(id IN NUMBER)
+AS
+s_name employees.emp_name%TYPE;
+s_sal  employees.salary%TYPE;
+s_id   employees.emp_id%TYPE;
+BEGIN
+SELECT emp_id, emp_name, salary
+INTO s_id, s_name, s_sal
+FROM employees
+WHERE emp_id = id;
+
+DBMS_OUTPUT.PUT_LINE('Employee Name : ' || s_name);
+DBMS_OUTPUT.PUT_LINE('Salary : ' || s_sal);
+
+EXCEPTION
+WHEN NO_DATA_FOUND THEN
+DBMS_OUTPUT.PUT_LINE('ID ' || id || ' not found');
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+EXEC Get_Empname(2);
+-- Employee Name : Alice
+-- Salary : 3000
+
+EXEC Get_Empname(12);
+-- ID 12 not found
+
+-------------------------------------------------------------
+
+2. Procedure: Validate Marks (0–100)
+
+CREATE OR REPLACE PROCEDURE check_marks(m NUMBER)
+AS
+invalid_marks EXCEPTION;
+BEGIN
+IF m < 0 OR m > 100 THEN
+RAISE invalid_marks;
+ELSE
+DBMS_OUTPUT.PUT_LINE('Valid Marks : ' || m);
+END IF;
+
+EXCEPTION
+WHEN invalid_marks THEN
+DBMS_OUTPUT.PUT_LINE('Error: Marks should be between 0 and 100');
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+EXEC check_marks(85);
+-- Valid Marks : 85
+
+EXEC check_marks(120);
+-- Error: Marks should be between 0 and 100
+
+============================================================
+
+Date: 24/03/26
+
+3. Procedure: Get Department Employee Details
+
+CREATE OR REPLACE PROCEDURE Get_Dept_id(n IN NUMBER)
+AS
+s_name employees.emp_name%TYPE;
+s_sal  employees.salary%TYPE;
+BEGIN
+SELECT emp_name, salary
+INTO s_name, s_sal
+FROM employees
+WHERE dept_id = n;
+
+DBMS_OUTPUT.PUT_LINE('Employee Name : ' || s_name);
+DBMS_OUTPUT.PUT_LINE('Salary : ' || s_sal);
+
+EXCEPTION
+WHEN TOO_MANY_ROWS THEN
+DBMS_OUTPUT.PUT_LINE('Maximum Employees found in dept = ' || n);
+END;
+/
+
+EXEC Get_Dept_id(102);
+-- Maximum Employees found in dept = 102
+
+------------------------------------------------------------------------
+
+4. User-Defined Exception Example
+
+CREATE OR REPLACE PROCEDURE UscExc(
+m1 IN NUMBER,
+m2 IN NUMBER,
+m3 IN NUMBER
+)
+AS
+Invalid_marks EXCEPTION;
+BEGIN
+IF m1 < 0 OR m1 > 100 OR
+m2 < 0 OR m2 > 100 OR
+m3 < 0 OR m3 > 100 THEN
+RAISE Invalid_marks;
+
+ELSIF m1 >= 50 OR m2 >= 50 OR m3 >= 50 THEN
+DBMS_OUTPUT.PUT_LINE('Result = Pass');
+
+ELSE
+DBMS_OUTPUT.PUT_LINE('Result = Fail');
+END IF;
+
+EXCEPTION
+WHEN Invalid_marks THEN
+DBMS_OUTPUT.PUT_LINE('Enter valid marks in range (0-100)');
+END;
+/
+
+EXEC UscExc(10, 105, 51);
+-- Enter valid marks in range (0-100)
+
+EXEC UscExc(55, 55, 55);
+-- Result = Pass
+
+EXEC UscExc(17, -55, 16);
+-- Enter valid marks in range (0-100)
