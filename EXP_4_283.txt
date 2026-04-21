@@ -1,0 +1,182 @@
+------------------------------------------------------------------------------------
+ EMPLOYEE & DEPARTMENT DATABASE
+
+
+# -----------------------------
+# Departments Table
+# -----------------------------
+
+CREATE TABLE departments (
+    deptno INT PRIMARY KEY,
+    dept_name VARCHAR(50),
+    location VARCHAR(50)
+);
+
+INSERT INTO departments VALUES (10, 'ACCOUNTING', 'New York');
+INSERT INTO departments VALUES (20, 'RESEARCH', 'Dallas');
+INSERT INTO departments VALUES (30, 'SALES', 'Chicago');
+INSERT INTO departments VALUES (40, 'OPERATIONS', 'Boston');
+
+
+# -----------------------------
+# Employee Table
+# -----------------------------
+
+CREATE TABLE emp (
+    emp_no INT PRIMARY KEY,
+    birth_date DATE NOT NULL,
+    first_name VARCHAR(14) NOT NULL,
+    last_name VARCHAR(16) NOT NULL,
+    gender varchar2(1) check (gender in ('M','F')) NOT NULL,
+    hire_date DATE NOT NULL,
+    salary FLOAT DEFAULT 7850.00,
+    job VARCHAR(20) NOT NULL,
+    deptno INT,
+    manager_id INT,
+    FOREIGN KEY (deptno) REFERENCES departments(deptno)
+);
+
+INSERT INTO emp VALUES (7839, date '1955-11-17', 'John',  'Smith',  'M', date '1990-06-09', 5000.00, 'MANAGER', 10, NULL);
+INSERT INTO emp VALUES (7566, date '1960-02-21', 'James', 'Brown',  'M', date '1991-04-02', 2450.00, 'CLERK', 20, 7839);
+INSERT INTO emp VALUES (7654, date '1963-12-09', 'Scott', 'Allen',  'M', date '1989-06-04', 2975.00, 'SALESMAN', 30, 7839);
+INSERT INTO emp VALUES (7934, date '1970-12-03', 'Adam',  'Martin', 'M', date '1993-07-09', 1300.00, 'CLERK', 30, 7839);
+INSERT INTO emp VALUES (7788, date '1961-05-23', 'Alan',  'Walker', 'M', date '1990-09-14', 3000.00, 'ANALYST', 20, 7566);
+INSERT INTO emp VALUES (7902, date '1958-11-07', 'Alice', 'Jones',  'F', date '1988-12-12', 1600.00, 'CLERK', 30, 7654);
+INSERT INTO emp VALUES (7876, date '1962-01-14', 'George','Black',  'M', date '1989-01-20', 1100.00, 'CLERK', 40, 7566);
+INSERT INTO emp VALUES (7844, date '1965-09-28', 'Diana', 'White',  'F', date '1992-05-21', 2950.00, 'SALESMAN', 30, 7654);
+INSERT INTO emp VALUES (7900, date '1972-06-19', 'Bob',   'King',   'M', date '1991-08-18', 850.00,  'CLERK', 10, 7839);
+
+
+# ============================================================
+# QUERIES
+# ============================================================
+
+
+# 1) Display all names of employees whose name starts with 'A' and has at least 3 characters
+
+select first_name
+from emp
+where lower(first_name) like 'a%'
+and length(first_name) >= 3;
+
+# OUTPUT:
+Alan
+Adam
+Alice
+
+
+# 2) Display departments located in Dallas, New York and Chicago
+
+select dept_name
+from departments
+where lower(location) in ('dallas','new york','chicago');
+
+# OUTPUT:
+ACCOUNTING
+RESEARCH
+SALES
+
+
+# 3) Employees working as clerk, salesman or analyst 
+#    and earning salary >= 3000
+
+select first_name, job, salary
+from emp
+where lower(job) in ('clerk','salesman','analyst')
+and salary >= 3000;
+
+# OUTPUT:
+FIRST_NAME   JOB       SALARY
+Alan         ANALYST    3000
+
+
+# 4) Display employees who are not managers
+
+select first_name, job
+from emp
+where lower(job) != 'manager';
+
+# OUTPUT:
+James   CLERK
+Scott   SALESMAN
+Adam    CLERK
+Alan    ANALYST
+Alice   CLERK
+George  CLERK
+Diana   SALESMAN
+Bob     CLERK
+
+
+# 5) Employee who earns highest salary
+
+select first_name, job, salary
+from emp
+where salary = (select max(salary) from emp);
+
+# OUTPUT:
+John   MANAGER   5000
+
+
+# 6) Employee who earns highest salary among clerks
+
+select emp_no, first_name, job, salary
+from emp
+where salary = (
+    select max(salary)
+    from emp
+    where lower(job) = 'clerk'
+);
+
+# OUTPUT:
+7566   James   CLERK   2450
+
+
+# 7) Clerks who earn more than Bob and less than James
+
+select first_name, salary
+from emp
+where lower(job) = 'clerk'
+and salary > (select salary from emp where lower(first_name) = 'bob')
+and salary < (select salary from emp where lower(first_name) = 'james');
+
+# OUTPUT:
+FIRST_NAME   SALARY
+Adam         1300
+Alice        1600
+George       1100
+
+# 8) Display the names of the employees who earn the highest salary in their respective departments
+
+select first_name, deptno, salary
+from emp e1
+where salary = (
+    select max(salary)
+    from emp e2
+    where e2.deptno = e1.deptno
+);
+
+# OUTPUT:
+FIRST_NAME   DEPTNO   SALARY
+John         10       5000
+Alan         20       3000
+Diana        30       2950
+George       40       1100
+
+
+# 9) Display employees who are working in the same department as their manager
+
+select e.first_name as employee_name, e.deptno, m.first_name as manager_name
+from emp e
+join emp m on e.manager_id = m.emp_no
+where e.deptno = m.deptno;
+
+# OUTPUT:
+EMPLOYEE_NAME   DEPTNO   MANAGER_NAME
+James           20       John
+Scott           30       John
+Adam            30       John
+Alan            20       James
+Alice           30       Scott
+George          40       James
+Diana           30       Scott
+Bob             10       John
